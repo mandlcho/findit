@@ -4,7 +4,10 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
+    const repoName = 'toilet-go-where';
+    const isCI = process.env.GITHUB_ACTIONS === 'true';
     return {
+      base: isCI ? `/${repoName}/` : '/',
       server: {
         port: 3000,
         host: '0.0.0.0',
