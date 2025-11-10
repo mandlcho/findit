@@ -1,0 +1,7 @@
+{
+  "name": "findtoilet",
+  "description": "Find the nearest public toilets based on your current location with AI-powered search and see them on a map.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
