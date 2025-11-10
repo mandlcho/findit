@@ -18,3 +18,13 @@ View your app in AI Studio: https://ai.studio/apps/drive/1K6dmG7TUom2YZlNrwgydH0
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Trigger the GitHub Pages deployment
+
+Use the helper script to dispatch the `Deploy to GitHub Pages` workflow from your terminal:
+
+```bash
+./scripts/run-pages-workflow.sh [branch]
+```
+
+The branch defaults to `main`. The script requires the [GitHub CLI](https://cli.github.com/) to be installed and authenticated (`gh auth login`). It waits for the workflow to finish and prints the resulting Pages URL so you can open the live site once the deployment completes.
