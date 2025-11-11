@@ -149,6 +149,11 @@ const App: React.FC = () => {
     }
   };
 
+  const handleSecretToilets = () => {
+    setIsSecretMenuOpen(false);
+    void handleFindToilets();
+  };
+
   const handleFindAtms = async () => {
     if (!location) {
       alert("cannot find atms without your location. please grant access and try again.");
@@ -231,13 +236,22 @@ const App: React.FC = () => {
           d
         </button>
         {isSecretMenuOpen && (
-          <button
-            onClick={handleFindAtms}
-            disabled={!location || isFinding}
-            className="px-3 py-1 text-xs font-semibold text-green-700 bg-white border border-green-200 rounded-full shadow hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500 disabled:opacity-50"
-          >
-            {isFinding && activeCategory === 'atm' ? 'finding...' : 'find atm machine'}
-          </button>
+          <div className="flex flex-col space-y-2">
+            <button
+              onClick={handleSecretToilets}
+              disabled={!location || isFinding}
+              className="px-3 py-1 text-xs font-semibold text-blue-700 bg-white border border-blue-200 rounded-full shadow hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 disabled:opacity-50"
+            >
+              {isFinding && activeCategory === 'toilet' ? 'finding...' : 'find toilets'}
+            </button>
+            <button
+              onClick={handleFindAtms}
+              disabled={!location || isFinding}
+              className="px-3 py-1 text-xs font-semibold text-green-700 bg-white border border-green-200 rounded-full shadow hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500 disabled:opacity-50"
+            >
+              {isFinding && activeCategory === 'atm' ? 'finding...' : 'find atm machine'}
+            </button>
+          </div>
         )}
       </div>
       
