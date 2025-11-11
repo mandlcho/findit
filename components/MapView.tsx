@@ -6,6 +6,7 @@ import { reverseGeocode } from '../services/geminiService';
 
 const userIconSvg = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="32" height="32"><circle cx="50" cy="50" r="45" fill="#3B82F6" stroke="#FFFFFF" stroke-width="10"/></svg>`;
 const toiletIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="5" r="2" /><path d="M9 7v10H5V7z" /><line x1="12" y1="4" x2="12" y2="20" /><circle cx="17" cy="5" r="2" /><path d="M15 7l2 10 2-10z" /></svg>`;
+const atmIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><path d="M6 9h12"/><path d="M8 13h3v4"/></svg>`;
 
 const userIcon = new L.DivIcon({
   html: `<div class="bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center border-4 border-white shadow-lg">${userIconSvg.replace('<svg', '<svg fill="white"')}</div>`,
@@ -17,6 +18,14 @@ const userIcon = new L.DivIcon({
 
 const toiletIcon = new L.DivIcon({
   html: `<div class="bg-white rounded-full p-1 w-10 h-10 flex items-center justify-center shadow-md">${toiletIconSvg}</div>`,
+  className: 'dummy',
+  iconSize: [40, 40],
+  iconAnchor: [20, 20],
+  popupAnchor: [0, -25],
+});
+
+const atmIcon = new L.DivIcon({
+  html: `<div class="bg-green-50 rounded-full p-1 w-10 h-10 flex items-center justify-center shadow-md text-green-600">${atmIconSvg}</div>`,
   className: 'dummy',
   iconSize: [40, 40],
   iconAnchor: [20, 20],
@@ -65,6 +74,7 @@ function MapEventsHandler({
 const ToiletPopupContent: React.FC<{ toilet: Toilet }> = ({ toilet }) => {
   const [address, setAddress] = useState(toilet.address);
   const [isLoading, setIsLoading] = useState(false);
+  const isAtm = toilet.category === 'atm';
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -93,8 +103,16 @@ const ToiletPopupContent: React.FC<{ toilet: Toilet }> = ({ toilet }) => {
 
   return (
     <div className="text-sm w-60" style={{ minHeight: '60px' }}>
-      <h3 className="font-bold text-base mb-1 break-words">{toilet.name}</h3>
-      {toilet.housedIn && <p className="text-gray-600 mb-1 break-words">inside: {toilet.housedIn}</p>}
+      <h3 className="font-bold text-base mb-1 break-words">
+        {toilet.name}
+        {isAtm && <span className="ml-1 uppercase text-[10px] tracking-wide text-green-600">atm</span>}
+      </h3>
+      {!isAtm && toilet.housedIn && <p className="text-gray-600 mb-1 break-words">inside: {toilet.housedIn}</p>}
+      {isAtm && (toilet.operator || toilet.network || toilet.brand) && (
+        <p className="text-gray-600 mb-1 break-words">
+          {[toilet.operator, toilet.network, toilet.brand].filter(Boolean).join(' • ')}
+        </p>
+      )}
       <p className="mb-2 break-words">{isLoading ? 'looking up address...' : address}</p>
       <button 
         onClick={handleGoClick}
@@ -135,7 +153,11 @@ const MapView: React.FC<MapViewProps> = ({ userLocation, toilets, center, zoom, 
         </Marker>
       )}
       {visibleToilets.map((toilet) => (
-        <Marker key={toilet.id} position={[toilet.location.lat, toilet.location.lng]} icon={toiletIcon}>
+        <Marker 
+          key={toilet.id} 
+          position={[toilet.location.lat, toilet.location.lng]} 
+          icon={toilet.category === 'atm' ? atmIcon : toiletIcon}
+        >
           <Popup>
             <ToiletPopupContent toilet={toilet} />
           </Popup>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { reverseGeocode, findToilets } from './services/geminiService';
+import { findAtms } from './services/osmService';
 import MapView from './components/MapView';
 import type { Location, Toilet } from './types';
 
@@ -22,9 +23,11 @@ const App: React.FC = () => {
   const [location, setLocation] = useState<Location | null>(null);
   const [status, setStatus] = useState<string>('checking permissions...');
   const [locationName, setLocationName] = useState<string>('awaiting permissions...');
+  const [activeCategory, setActiveCategory] = useState<'toilet' | 'atm'>('toilet');
   const [toilets, setToilets] = useState<Toilet[]>([]);
   const [filteredToilets, setFilteredToilets] = useState<Toilet[]>([]);
   const [isFinding, setIsFinding] = useState<boolean>(false);
+  const [isSecretMenuOpen, setIsSecretMenuOpen] = useState<boolean>(false);
   const [mapCenter, setMapCenter] = useState<Location>(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState<number>(DEFAULT_ZOOM);
   const [filters, setFilters] = useState<FilterState>({
@@ -107,6 +110,11 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (activeCategory === 'atm') {
+      setFilteredToilets(toilets);
+      return;
+    }
+
     let toiletsToFilter = [...toilets];
     if (filters.free) {
       toiletsToFilter = toiletsToFilter.filter(t => t.fee === true);
@@ -118,7 +126,7 @@ const App: React.FC = () => {
       toiletsToFilter = toiletsToFilter.filter(t => t.diaper === true);
     }
     setFilteredToilets(toiletsToFilter);
-  }, [toilets, filters]);
+  }, [toilets, filters, activeCategory]);
 
   const handleFindToilets = async () => {
     if (!location) {
@@ -129,8 +137,31 @@ const App: React.FC = () => {
     try {
       const foundToilets = await findToilets(location);
       setToilets(foundToilets);
+      setActiveCategory('toilet');
       if (foundToilets.length === 0) {
         alert("no toilets found nearby.");
+      }
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "an unexpected error occurred.");
+    } finally {
+      setIsFinding(false);
+    }
+  };
+
+  const handleFindAtms = async () => {
+    if (!location) {
+      alert("cannot find atms without your location. please grant access and try again.");
+      return;
+    }
+    setIsSecretMenuOpen(false);
+    setIsFinding(true);
+    try {
+      const foundAtms = await findAtms(location);
+      setActiveCategory('atm');
+      setToilets(foundAtms);
+      if (foundAtms.length === 0) {
+        alert("no atms found nearby.");
       }
     } catch (error: any) {
       console.error(error);
@@ -162,7 +193,7 @@ const App: React.FC = () => {
         onViewportChanged={handleViewportChanged}
       />
 
-      {toilets.length > 0 && !isFinding && (
+      {toilets.length > 0 && !isFinding && activeCategory === 'toilet' && (
         <div className="absolute top-1/2 -translate-y-1/2 right-4 flex flex-col items-center space-y-3">
             <button 
                 onClick={() => handleFilterChange('free')}
@@ -191,13 +222,32 @@ const App: React.FC = () => {
         </div>
       )}
       
+      <div className="absolute bottom-5 left-5 z-10 flex flex-col items-start space-y-2">
+        <button
+          onClick={() => setIsSecretMenuOpen(prev => !prev)}
+          aria-label="developer menu"
+          className="w-7 h-7 text-[11px] font-bold lowercase text-gray-400 bg-white/80 border border-transparent rounded-full shadow hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+        >
+          d
+        </button>
+        {isSecretMenuOpen && (
+          <button
+            onClick={handleFindAtms}
+            disabled={!location || isFinding}
+            className="px-3 py-1 text-xs font-semibold text-green-700 bg-white border border-green-200 rounded-full shadow hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500 disabled:opacity-50"
+          >
+            {isFinding && activeCategory === 'atm' ? 'finding...' : 'find atm machine'}
+          </button>
+        )}
+      </div>
+      
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md text-center">
         <button
           onClick={handleFindToilets}
           disabled={!location || isFinding}
           className="px-6 py-3 text-base font-semibold text-gray-800 bg-white border border-gray-300 rounded-lg transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
         >
-          {isFinding ? 'finding...' : `find toilets (${filteredToilets.length})`}
+          {isFinding ? 'finding...' : `find toilets${activeCategory === 'toilet' ? ` (${filteredToilets.length})` : ''}`}
         </button>
 
         <div className="mt-3 text-[10px] text-black" style={{ textShadow: '0 0 4px white, 0 0 6px white' }}>

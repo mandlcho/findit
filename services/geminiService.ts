@@ -105,6 +105,7 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
         return {
           id: element.id.toString(),
           name: name.toLowerCase(),
+          category: 'toilet',
           location: loc,
           address: address.toLowerCase(),
           housedIn: housedIn?.toLowerCase(),

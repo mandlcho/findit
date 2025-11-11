@@ -4,6 +4,8 @@ export interface Location {
   lng: number;
 }
 
+export type PlaceCategory = 'toilet' | 'atm';
+
 export interface Toilet {
   id: string;
   name: string;
@@ -13,4 +15,8 @@ export interface Toilet {
   wheelchair?: boolean;
   diaper?: boolean;
   housedIn?: string;
+  category?: PlaceCategory;
+  operator?: string;
+  network?: string;
+  brand?: string;
 }
