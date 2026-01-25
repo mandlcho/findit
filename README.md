@@ -47,11 +47,11 @@ Guardrails:
   - **ATMs** (secondary “nearby essentials” category)
 
 ## Data sources (current approach)
-This prototype uses a mix of sources:
-- **OpenStreetMap (Overpass)** for POIs (e.g., ATMs)
-- **Gemini** for reverse geocoding (friendly place name) and prototype toilet discovery/normalization
+This prototype uses deterministic, public sources by default:
+- **OpenStreetMap (Overpass)** for POIs (toilets, ATMs)
+- **Nominatim** (OpenStreetMap) for reverse geocoding (friendly place names and addresses)
 
-If productionized, I’d prioritize deterministic sources (official datasets, contracted providers, curated POIs) and treat LLM usage as optional.
+If productionized, I’d add caching + rate limiting, and optionally incorporate official/curated datasets to improve coverage and attribute quality.
 
 ## Privacy, security, accessibility (operational considerations)
 - Location is sensitive. The app is designed to work without accounts.
@@ -77,7 +77,6 @@ Prerequisites: Node.js
 
 ```bash
 npm install
-# set GEMINI_API_KEY in .env.local
 npm run dev
 ```
 
@@ -89,4 +88,4 @@ npm run dev
 ## Tech stack
 - React + TypeScript + Vite
 - Map rendering in `components/MapView`
-- Services in `services/` (Gemini + OSM)
+- Services in `services/` (Overpass + Nominatim)
