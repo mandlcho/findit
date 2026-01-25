@@ -1,30 +1,104 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# findit — Find toilets (and ATMs) near you, fast
 
-# Run and deploy your AI Studio app
+A mobile-first web app that helps you quickly locate nearby public toilets when you’re out and need one.
 
-This contains everything you need to run your app locally.
+This project is intentionally framed like a **citizen digital service prototype**: minimal friction, privacy-aware location use, and clear paths to improve data quality over time.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1K6dmG7TUom2YZlNrwgydH03Dr4AtlNBR
+## Why this exists (problem)
+When nature calls, the problem is time-sensitive and stressful. People often rely on:
+- fragmented information (random blog posts, outdated listings)
+- “walk around and hope”
+- asking staff (not always possible)
 
-## Run Locally
+A simple “nearest toilets, right now” experience is a small but real-quality-of-life digital service.
 
-**Prerequisites:**  Node.js
+## Who it’s for (users)
+Primary users:
+- commuters and people in transit
+- families with young kids
+- elderly users
+- tourists / unfamiliar with the area
 
+Secondary users (operators, if this were productionized):
+- facility operators who want faster feedback on incorrect listings
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## What it does
+- Requests your approximate location (browser geolocation)
+- Shows nearby points on a map
+- Supports categories:
+  - **Toilets** (with filters like wheelchair/diaper where available)
+  - **ATMs** (as an alternate “nearby essentials” demo category)
 
-## Trigger the GitHub Pages deployment
+## Data sources (current)
+This is a prototype and uses a mix of sources:
+- **OpenStreetMap (Overpass)** for POI discovery (e.g., ATMs)
+- An LLM-assisted step (Gemini) for:
+  - reverse geocoding (turning coordinates into a friendly place name)
+  - toilet discovery/normalization (prototype approach)
 
-Use the helper script to dispatch the `Deploy to GitHub Pages` workflow from your terminal:
+In a GovTech setting, the roadmap would prioritize **deterministic sources** (official datasets, contracted providers, or curated POIs) and treat LLM usage as optional.
+
+## Privacy & security notes
+- Location is sensitive data.
+- The app is designed to work without accounts.
+- In a production version, we would:
+  - avoid storing raw location server-side
+  - minimize logs that might contain coordinates
+  - provide clear consent and an opt-out path
+
+## Accessibility & reliability
+This should work well in real-world conditions:
+- handles denied geolocation (shows status and does not crash)
+- aims for low-tap, fast discovery
+
+Future accessibility improvements:
+- large text mode
+- higher contrast mode
+- keyboard navigation and screen reader labeling
+
+## Success metrics (what I would measure)
+If deployed as a citizen-facing service, I’d track:
+- time-to-first-result (from page load to nearest POIs shown)
+- time-to-action (tap a toilet/ATM pin or open directions)
+- “useful result rate” (user indicates the listing was accurate/open)
+- coverage density (POIs per area) and correction rate
+
+## Roadmap (outcome-driven)
+- **Data quality loop**: “Is this listing accurate/open?” feedback to improve POIs
+- **Graceful fallback**: allow searching by MRT station / landmark when location is denied
+- **Accessibility upgrades**: large text + contrast, better labels, reduced motion
+- **Offline-ish support**: cache last known results (with clear privacy messaging)
+
+## Run locally
+**Prerequisites:** Node.js
+
+1. Install dependencies
+   ```bash
+   npm install
+   ```
+2. Set `GEMINI_API_KEY` in `.env.local`
+3. Run the app
+   ```bash
+   npm run dev
+   ```
+
+## Deploy
+This repo includes a helper script to dispatch the GitHub Pages workflow:
 
 ```bash
 ./scripts/run-pages-workflow.sh [branch]
 ```
 
-The branch defaults to `main`. The script requires the [GitHub CLI](https://cli.github.com/) to be installed and authenticated (`gh auth login`). It waits for the workflow to finish and prints the resulting Pages URL so you can open the live site once the deployment completes.
+The branch defaults to `main`.
+
+## Tech stack
+- React + TypeScript
+- Vite
+- Map rendering in `components/MapView`
+- Services in `services/` (Gemini + OSM)
+
+## Notes for reviewers (Technical PM context)
+This repo is part of my portfolio direction toward **GovTech technical product management**. I’m using it to demonstrate:
+- translating a human, time-sensitive need into a simple service
+- pragmatic delivery with constraints (privacy, reliability, accessibility)
+- an outcome-driven roadmap and measurable success criteria
