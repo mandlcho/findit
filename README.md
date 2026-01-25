@@ -36,7 +36,7 @@ This is a prototype and uses a mix of sources:
   - reverse geocoding (turning coordinates into a friendly place name)
   - toilet discovery/normalization (prototype approach)
 
-In a GovTech setting, the roadmap would prioritize **deterministic sources** (official datasets, contracted providers, or curated POIs) and treat LLM usage as optional.
+In a public-service setting, I’d prioritize **deterministic sources** (official datasets, contracted providers, or curated POIs) and treat LLM usage as optional.
 
 ## Privacy & security notes
 - Location is sensitive data.
@@ -56,14 +56,14 @@ Future accessibility improvements:
 - higher contrast mode
 - keyboard navigation and screen reader labeling
 
-## Success metrics (what I would measure)
+## How to know it’s working (outcomes)
 If deployed as a citizen-facing service, I’d track:
 - time-to-first-result (from page load to nearest POIs shown)
 - time-to-action (tap a toilet/ATM pin or open directions)
 - “useful result rate” (user indicates the listing was accurate/open)
 - coverage density (POIs per area) and correction rate
 
-## Roadmap (outcome-driven)
+## Next iterations
 - **Data quality loop**: “Is this listing accurate/open?” feedback to improve POIs
 - **Graceful fallback**: allow searching by MRT station / landmark when location is denied
 - **Accessibility upgrades**: large text + contrast, better labels, reduced motion
@@ -97,8 +97,8 @@ The branch defaults to `main`.
 - Map rendering in `components/MapView`
 - Services in `services/` (Gemini + OSM)
 
-## Notes for reviewers (Technical PM context)
-This repo is part of my portfolio direction toward **GovTech technical product management**. I’m using it to demonstrate:
-- translating a human, time-sensitive need into a simple service
-- pragmatic delivery with constraints (privacy, reliability, accessibility)
-- an outcome-driven roadmap and measurable success criteria
+## Service notes
+This repo is written like a small public-facing service:
+- user need first, then implementation
+- privacy and accessibility as default constraints
+- measurable outcomes and an iteration plan
