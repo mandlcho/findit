@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { reverseGeocode, findToilets } from './services/geminiService';
+import { reverseGeocode, findToilets } from './services/locationService';
 import { findAtms } from './services/osmService';
 import MapView from './components/MapView';
 import type { Location, Toilet } from './types';
