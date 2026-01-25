@@ -117,7 +117,8 @@ const App: React.FC = () => {
 
     let toiletsToFilter = [...toilets];
     if (filters.free) {
-      toiletsToFilter = toiletsToFilter.filter(t => t.fee === true);
+      // `fee` is treated as "paid" in our data model; "free" means fee === false.
+      toiletsToFilter = toiletsToFilter.filter(t => t.fee === false);
     }
     if (filters.wheelchair) {
       toiletsToFilter = toiletsToFilter.filter(t => t.wheelchair === true);
@@ -128,18 +129,14 @@ const App: React.FC = () => {
     setFilteredToilets(toiletsToFilter);
   }, [toilets, filters, activeCategory]);
 
-  const handleFindToilets = async () => {
-    if (!location) {
-      alert("cannot find toilets without your location. please grant access and try again.");
-      return;
-    }
+  const handleFindToiletsAt = async (searchLocation: Location) => {
     setIsFinding(true);
     try {
-      const foundToilets = await findToilets(location);
+      const foundToilets = await findToilets(searchLocation);
       setToilets(foundToilets);
       setActiveCategory('toilet');
       if (foundToilets.length === 0) {
-        alert("no toilets found nearby.");
+        alert("no toilets found in this area.");
       }
     } catch (error: any) {
       console.error(error);
@@ -147,6 +144,12 @@ const App: React.FC = () => {
     } finally {
       setIsFinding(false);
     }
+  };
+
+  const handleFindToilets = async () => {
+    // Allow usage even when geolocation is denied by searching around the current map center.
+    const searchLocation = location ?? mapCenter;
+    return handleFindToiletsAt(searchLocation);
   };
 
   const handleSecretToilets = () => {
@@ -154,19 +157,14 @@ const App: React.FC = () => {
     void handleFindToilets();
   };
 
-  const handleFindAtms = async () => {
-    if (!location) {
-      alert("cannot find atms without your location. please grant access and try again.");
-      return;
-    }
-    setIsSecretMenuOpen(false);
+  const handleFindAtmsAt = async (searchLocation: Location) => {
     setIsFinding(true);
     try {
-      const foundAtms = await findAtms(location);
+      const foundAtms = await findAtms(searchLocation);
       setActiveCategory('atm');
       setToilets(foundAtms);
       if (foundAtms.length === 0) {
-        alert("no atms found nearby.");
+        alert("no atms found in this area.");
       }
     } catch (error: any) {
       console.error(error);
@@ -174,6 +172,13 @@ const App: React.FC = () => {
     } finally {
       setIsFinding(false);
     }
+  };
+
+  const handleFindAtms = async () => {
+    setIsSecretMenuOpen(false);
+    // Allow usage even when geolocation is denied by searching around the current map center.
+    const searchLocation = location ?? mapCenter;
+    return handleFindAtmsAt(searchLocation);
   };
   
   const handleFilterChange = (filterName: keyof FilterState) => {
@@ -239,14 +244,14 @@ const App: React.FC = () => {
           <div className="flex flex-col space-y-2">
             <button
               onClick={handleSecretToilets}
-              disabled={!location || isFinding}
+              disabled={isFinding}
               className="px-3 py-1 text-xs font-semibold text-blue-700 bg-white border border-blue-200 rounded-full shadow hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 disabled:opacity-50"
             >
               {isFinding && activeCategory === 'toilet' ? 'finding...' : 'find toilets'}
             </button>
             <button
               onClick={handleFindAtms}
-              disabled={!location || isFinding}
+              disabled={isFinding}
               className="px-3 py-1 text-xs font-semibold text-green-700 bg-white border border-green-200 rounded-full shadow hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500 disabled:opacity-50"
             >
               {isFinding && activeCategory === 'atm' ? 'finding...' : 'find atm machine'}
@@ -256,17 +261,29 @@ const App: React.FC = () => {
       </div>
       
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md text-center">
-        <button
-          onClick={handleFindToilets}
-          disabled={!location || isFinding}
-          className="px-6 py-3 text-base font-semibold text-gray-800 bg-white border border-gray-300 rounded-lg transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
-        >
-          {isFinding ? 'finding...' : `find toilets${activeCategory === 'toilet' ? ` (${filteredToilets.length})` : ''}`}
-        </button>
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={handleFindToilets}
+            disabled={isFinding}
+            className="px-6 py-3 text-base font-semibold text-gray-800 bg-white border border-gray-300 rounded-lg transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
+          >
+            {isFinding ? 'finding...' : `find toilets${activeCategory === 'toilet' ? ` (${filteredToilets.length})` : ''}`}
+          </button>
+
+          <button
+            onClick={() => handleFindToiletsAt(mapCenter)}
+            disabled={isFinding}
+            className="px-4 py-3 text-base font-semibold text-gray-800 bg-white/90 border border-gray-300 rounded-lg transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
+            title="Search around the current map center (useful if you pan/zoom or location is denied)"
+          >
+            search this area
+          </button>
+        </div>
 
         <div className="mt-3 text-[10px] text-black" style={{ textShadow: '0 0 4px white, 0 0 6px white' }}>
             <p><span className="font-bold">location access:</span> {status}</p>
             <p><span className="font-bold">current location:</span> {locationName}</p>
+            {!location && <p><span className="font-bold">note:</span> searching uses the map center when location is unavailable.</p>}
         </div>
       </div>
     </div>
