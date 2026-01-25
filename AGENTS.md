@@ -1,11 +1,11 @@
 # Repository Guidelines
 
-Toilet-go-where is a Vite-powered React app that locates nearby public toilets using Gemini APIs. Follow the practices below to keep contributions predictable and production-ready.
+findit is a Vite-powered React app that locates nearby public toilets using OpenStreetMap (Overpass) and Nominatim. Follow the practices below to keep contributions predictable and production-ready.
 
 ## Project Structure & Modules
 - `App.tsx` holds global state (location, filters) and wires UI flow; treat it as the orchestration layer.
 - `components/MapView.tsx` renders the Leaflet map; add new UI pieces as sibling components under `components/`.
-- `services/geminiService.ts` centralizes AI calls; extend this module rather than calling APIs directly from views.
+- `services/locationService.ts` centralizes AI calls; extend this module rather than calling APIs directly from views.
 - `types.ts` defines shared interfaces; introduce new domain types here for consistency.
 - Static assets live in `index.html` and `metadata.json`; configuration is in `vite.config.ts`.
 
@@ -31,6 +31,4 @@ Toilet-go-where is a Vite-powered React app that locates nearby public toilets u
 - Each PR should describe the user-facing change, list key commands run (`npm run build`, tests), and link tracking issues.
 - Include screenshots or screen recordings when UI shifts, and note any new env vars or migrations.
 
-## Security & Configuration
-- Store secrets in `.env.local`; the app expects `GEMINI_API_KEY=your-key`.
-- Never commit `.env` files or API responses; redact request IDs when sharing logs.
+## Security & Configuration- Never commit `.env` files or API responses; redact request IDs when sharing logs.
