@@ -51,7 +51,14 @@ This prototype uses deterministic, public sources by default:
 - **OpenStreetMap (Overpass)** for POIs (toilets, ATMs)
 - **Nominatim** (OpenStreetMap) for reverse geocoding (friendly place names and addresses)
 
-If productionized, I’d add caching + rate limiting, and optionally incorporate official/curated datasets to improve coverage and attribute quality.
+### Nominatim usage notes (reliability + compliance)
+This project adds basic client-side safeguards:
+- in-memory caching for reverse geocode results (rounded lat/lng + TTL)
+- debouncing reverse-geocode lookups triggered by popups
+
+Note: Nominatim’s policy asks for a descriptive User-Agent. In a browser app, the `User-Agent` header cannot be overridden by JavaScript; for production usage you should route requests through your own backend/proxy where you can set a compliant User-Agent and enforce rate limits.
+
+If productionized, I’d also add stronger caching + rate limiting, and optionally incorporate official/curated datasets to improve coverage and attribute quality.
 
 ## Privacy, security, accessibility (operational considerations)
 - Location is sensitive. The app is designed to work without accounts.
