@@ -2,6 +2,15 @@
 
 A lightweight, mobile-first web app for quickly finding nearby toilets when you’re out and time matters.
 
+Built for phones first:
+- low-friction, “open and go” UX
+- works even if location permission is denied (search uses the map center)
+
+## Screenshots (mobile)
+| Home (no location) | Results | Detail popup |
+| --- | --- | --- |
+| ![Home (no location)](docs/screenshots/01-home-no-location.png) | ![Results](docs/screenshots/02-results-pins.png) | ![Detail popup](docs/screenshots/03-detail-popup.png) |
+
 It prioritizes:
 - **fast time-to-value** (few taps, quick results)
 - **clear relevance** (nearby, filtered)
