@@ -2,6 +2,8 @@
 
 A lightweight, mobile-first web app for quickly finding nearby toilets when you’re out and time matters.
 
+Live demo: https://mandlcho.github.io/findit/
+
 Built for phones first:
 - low-friction, “open and go” UX
 - works even if location permission is denied (search uses the map center)
