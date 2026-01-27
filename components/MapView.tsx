@@ -76,6 +76,35 @@ const ToiletPopupContent: React.FC<{ toilet: Toilet }> = ({ toilet }) => {
   const [isLoading, setIsLoading] = useState(false);
   const isAtm = toilet.category === 'atm';
 
+  const buildReportUrl = () => {
+    const { lat, lng } = toilet.location;
+    const title = `Listing issue: ${toilet.name} (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+    const body = [
+      `Problem:`,
+      ``,
+      `- [ ] wrong location`,
+      `- [ ] not a toilet / removed`,
+      `- [ ] details are incorrect`,
+      `- [ ] other`,
+      ``,
+      `Listing:`,
+      `- name: ${toilet.name}`,
+      `- id: ${toilet.id}`,
+      `- category: ${toilet.category}`,
+      `- coordinates: ${lat}, ${lng}`,
+      `- address shown: ${address}`,
+      ``,
+      `Extra notes:`
+    ].join('\n');
+
+    const params = new URLSearchParams({
+      title,
+      body,
+    });
+
+    return `https://github.com/mandlcho/findit/issues/new?${params.toString()}`;
+  };
+
   useEffect(() => {
     let isCancelled = false;
 
@@ -123,12 +152,23 @@ const ToiletPopupContent: React.FC<{ toilet: Toilet }> = ({ toilet }) => {
         </p>
       )}
       <p className="mb-2 break-words">{isLoading ? 'looking up address...' : address}</p>
+      <p className="mb-2 text-[10px] text-gray-500 leading-tight">
+        data from openstreetmap. may be outdated.
+      </p>
       <button 
         onClick={handleGoClick}
         className="w-full px-3 py-1 text-sm font-bold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
       >
         go
       </button>
+      <a
+        href={buildReportUrl()}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-2 block text-center text-[11px] font-semibold text-gray-600 underline underline-offset-2"
+      >
+        report this listing
+      </a>
     </div>
   );
 };
