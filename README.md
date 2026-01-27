@@ -7,9 +7,25 @@ Built for phones first:
 - works even if location permission is denied (search uses the map center)
 
 ## Screenshots (mobile)
-| Home (no location) | Results | Detail popup |
-| --- | --- | --- |
-| ![Home (no location)](docs/screenshots/01-home-no-location.png) | ![Results](docs/screenshots/02-results-pins.png) | ![Detail popup](docs/screenshots/03-detail-popup.png) |
+
+<table>
+  <tr>
+    <td align="center"><b>Home (no location)</b></td>
+    <td align="center"><b>Results</b></td>
+    <td align="center"><b>Detail popup</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/screenshots/01-home-no-location.png" width="230" alt="Home (no location)" />
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/02-results-pins.png" width="230" alt="Results" />
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/03-detail-popup.png" width="230" alt="Detail popup" />
+    </td>
+  </tr>
+</table>
 
 It prioritizes:
 - **fast time-to-value** (few taps, quick results)
