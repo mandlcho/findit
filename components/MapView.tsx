@@ -77,23 +77,32 @@ const ToiletPopupContent: React.FC<{ toilet: Toilet }> = ({ toilet }) => {
   const isAtm = toilet.category === 'atm';
 
   useEffect(() => {
-    const fetchAddress = async () => {
-      if (address === 'address not available') {
+    let isCancelled = false;
+
+    const timer = window.setTimeout(() => {
+      const fetchAddress = async () => {
+        if (address !== 'address not available') return;
+
         setIsLoading(true);
         try {
           const newAddress = await reverseGeocode(toilet.location);
-          setAddress(newAddress);
+          if (!isCancelled) setAddress(newAddress);
         } catch (error) {
           console.error("failed to reverse geocode:", error);
-          setAddress('could not look up address');
+          if (!isCancelled) setAddress('could not look up address');
         } finally {
-          setIsLoading(false);
+          if (!isCancelled) setIsLoading(false);
         }
-      }
-    };
+      };
 
-    fetchAddress();
-  }, [toilet, address]);
+      void fetchAddress();
+    }, 300);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [toilet.location.lat, toilet.location.lng, address]);
   
   const handleGoClick = () => {
     const { lat, lng } = toilet.location;
