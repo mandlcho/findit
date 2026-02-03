@@ -1,109 +1,239 @@
-# findit — fast nearby toilets (and ATMs)
+<div align="center">
+<img width="256" height="256" alt="FindToilet Icon" src="./magnify-icon.png" />
+</div>
 
-A lightweight, mobile-first web app for quickly finding nearby toilets when you’re out and time matters.
+# FindToilet 🚽
 
-Live demo: https://mandlcho.github.io/findit/
+> A personal hackathon project that solves a real-world problem: finding the nearest public toilets when you need them most.
 
-Built for phones first:
-- low-friction, “open and go” UX
-- works even if location permission is denied (search uses the map center)
+## The Story: How This Started
 
-## Screenshots (mobile)
-| Home (no location) | Results | Detail popup |
-| --- | --- | --- |
-| ![Home (no location)](docs/screenshots/01-home-no-location.png) | ![Results](docs/screenshots/02-results-pins.png) | ![Detail popup](docs/screenshots/03-detail-popup.png) |
+### The Problem
+During a weekend in Singapore, I faced an urgent situation—I desperately needed to find a public toilet nearby with no idea where to look. I could use Google Maps for restaurants, ATMs, or hospitals, but there was no easy way to search for public restrooms with specific amenities (free, wheelchair accessible, etc.). 
 
-It prioritizes:
-- **fast time-to-value** (few taps, quick results)
-- **clear relevance** (nearby, filtered)
-- **privacy-aware defaults** (no accounts, minimal data retention)
-- **accessibility as a baseline** (works under real-world constraints)
+**Thought Process**: If something this common is hard to find, maybe others face the same problem. What if I could build a tool that combines real-time geolocation with AI to make toilet discovery effortless?
 
-## Context / problem
-When nature calls, people often rely on fragmented info (outdated lists, random blog posts), or walking around and hoping. That’s a poor experience in a time-sensitive moment.
+### Building It
+Instead of another feature request, I decided to solve it myself. This hackathon project reverse-engineered the problem and built a working solution in a single sprint.
 
-This project explores a simple public-facing service: “nearest toilets, right now”.
+---
 
-## Users
-Primary:
-- commuters and people in transit
-- families with young kids
-- elderly users
-- tourists / unfamiliar with the area
+## What FindToilet Does
 
-Secondary (if productionized):
-- facility operators who want quicker feedback when listings are wrong
+An AI-powered web app that:
+- 📍 Locates nearby public toilets using your current position
+- 🤖 Understands natural language queries ("find a wheelchair-accessible toilet near me")
+- 🗺️ Displays results on an interactive map
+- 🔍 Filters by amenities: free access, wheelchair accessibility, diaper changing facilities
+- 🏗️ Reverse-engineers toilet locations from OpenStreetMap data
 
-## Goals (success criteria)
-If this shipped as a public service, success looks like:
-- **Time-to-first-result**: user sees nearby results quickly after load
-- **Time-to-action**: user taps a location or opens directions with minimal friction
-- **Useful result rate**: users confirm results are accurate/open
-- **Coverage / data quality**: improved completeness and lower correction rate over time
+**Live Demo**: [FindToilet on GitHub Pages](https://mandlcho.github.io/findit/)
 
-Guardrails:
-- avoid collecting/storing sensitive location data unnecessarily
-- maintain acceptable latency and graceful degradation when permissions are denied
+---
 
-## Non-goals (for now)
-- user accounts, personalization, or history
-- “perfect data” (this prototype expects imperfect POIs and focuses on iteration)
-- complex routing, indoor navigation, or facility ownership workflows
+## Building FindToilet From Scratch: The Checklist
 
-## What it does (current MVP)
-- requests approximate location (browser geolocation)
-- displays nearby POIs on a map
-- supports categories:
-  - **Toilets** (with filters like wheelchair/diaper where available)
-  - **ATMs** (secondary “nearby essentials” category)
+This is the architecture I reverse-engineered when rebuilding this app. Follow this to understand the full stack:
 
-## Data sources (current approach)
-This prototype uses deterministic, public sources by default:
-- **OpenStreetMap (Overpass)** for POIs (toilets, ATMs)
-- **Nominatim** (OpenStreetMap) for reverse geocoding (friendly place names and addresses)
+### Layer 1: Frontend Architecture
+- [ ] **Entry Point** (`index.html` + `index.tsx`)
+  - Set up React with TailwindCSS and Leaflet map styling
+  - Configure importmap for CDN-based module loading
+  - Root element for React mounting
 
-### Nominatim usage notes (reliability + compliance)
-This project adds basic client-side safeguards:
-- in-memory caching for reverse geocode results (rounded lat/lng + TTL)
-- debouncing reverse-geocode lookups triggered by popups
+- [ ] **Global State & Orchestration** (`App.tsx`)
+  - Manage location state (geolocation permissions + coordinates)
+  - Handle filter state (free, wheelchair, diaper)
+  - Orchestrate user interactions (find, filter, map pan/zoom)
+  - Toggle between toilet and ATM search modes
 
-Note: Nominatim’s policy asks for a descriptive User-Agent. In a browser app, the `User-Agent` header cannot be overridden by JavaScript; for production usage you should route requests through your own backend/proxy where you can set a compliant User-Agent and enforce rate limits.
+- [ ] **Map Component** (`components/MapView.tsx`)
+  - Render Leaflet map with user location marker
+  - Display toilet/ATM markers as popups
+  - Handle viewport changes (pan, zoom, bounds)
+  - Show addresses and facility details on hover/click
 
-If productionized, I’d also add stronger caching + rate limiting, and optionally incorporate official/curated datasets to improve coverage and attribute quality.
+- [ ] **Type Definitions** (`types.ts`)
+  - `Location`: { lat, lng }
+  - `Toilet`: { id, name, location, address, fee, wheelchair, diaper, category }
+  - `PlaceCategory`: "toilet" | "atm"
 
-## Privacy, security, accessibility (operational considerations)
-- Location is sensitive. The app is designed to work without accounts.
-- Handles denied geolocation without breaking the experience.
-- Accessibility improvements to prioritize next:
-  - large text + higher contrast
-  - keyboard navigation + screen reader labeling
+### Layer 2: Services (API Integration)
+- [ ] **Geolocation & Reverse Geocoding** (`services/geminiService.ts`)
+  - Request browser geolocation with permission checks
+  - Call Nominatim API to convert coordinates → human-readable addresses
+  - Query Overpass API for toilets near stations/amenities
+  - Parse OSM data and map to Toilet schema
 
-## Risks & constraints
-- POI accuracy varies (stale listings, missing attributes)
-- location permission denial reduces usefulness
-- external API dependencies (latency, quotas, reliability)
-- accessibility requirements need deliberate QA
+- [ ] **ATM Search Service** (`services/osmService.ts`)
+  - Query Overpass API for ATM nodes/ways/relations
+  - Extract operator, network, brand metadata
+  - Convert OSM tags to standardized format
 
-## Rollout / iteration plan (if this were real)
-1) MVP: show nearby results reliably, capture lightweight feedback
-2) Data quality loop: user-reported corrections, validation, dedupe
-3) Accessibility hardening + performance improvements
-4) Expand coverage and add deterministic datasets
+### Layer 3: Configuration & Build
+- [ ] **TypeScript Configuration** (`tsconfig.json`)
+  - Target ES2022
+  - Enable JSX mode (react)
+  - Path alias: `@` → project root
 
-## Run locally
-Prerequisites: Node.js
+- [ ] **Vite Build Setup** (`vite.config.ts`)
+  - Configure base path for GitHub Pages (`/findit/`)
+  - Inject environment variables (GEMINI_API_KEY)
+  - Dev server on port 3000
+  - React plugin for JSX compilation
+
+- [ ] **Package Dependencies** (`package.json`)
+  - React 18 + ReactDOM
+  - Vite (dev)
+  - TypeScript (dev)
+  - Leaflet + react-leaflet (maps)
+  - @google/genai (AI integration—currently unused but prepared)
+
+### Layer 4: Deployment Pipeline
+- [ ] **GitHub Pages Workflow** (`.github/workflows/pages.yml`)
+  - Trigger on push to `main` or manual dispatch
+  - Node 20 + npm install → npm run build
+  - Upload `dist/` artifact
+  - Deploy to https://{owner}.github.io/findit/
+
+- [ ] **Helper Script** (`scripts/run-pages-workflow.sh`)
+  - Automate workflow dispatch with GitHub CLI
+  - Poll for completion and output live deployment URL
+
+### Layer 5: Assets & Branding
+- [ ] **Icons**
+  - `magnify-icon.svg` (vector, responsive)
+  - `magnify-icon.png` (256×256 raster, favicon + apple-touch-icon)
+  - Both referenced in `index.html`
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 18 + TypeScript |
+| **Build Tool** | Vite 6 |
+| **Maps** | Leaflet + react-leaflet |
+| **Data** | OpenStreetMap (Overpass API) |
+| **Geocoding** | Nominatim API |
+| **Styling** | Tailwind CSS |
+| **Deployment** | GitHub Pages + GitHub Actions |
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Node.js (v16+)
+- npm or yarn
+- A browser with geolocation support
+
+### Installation
 
 ```bash
+git clone https://github.com/mandlcho/findit.git
+cd findit
 npm install
+```
+
+### Development
+
+```bash
 npm run dev
 ```
 
-## Deploy
+Opens http://localhost:3000 with hot reload.
+
+### Build & Deploy
+
 ```bash
-./scripts/run-pages-workflow.sh [branch]
+npm run build        # Create production bundle in dist/
+npm run preview      # Test the production build locally
 ```
 
-## Tech stack
-- React + TypeScript + Vite
-- Map rendering in `components/MapView`
-- Services in `services/` (Overpass + Nominatim)
+To deploy to GitHub Pages:
+
+```bash
+./scripts/run-pages-workflow.sh
+```
+
+---
+
+## Architecture Diagram
+
+```
+┌─────────────────────────────────────┐
+│   Browser (User)                    │
+│  ┌───────────────────────────────┐  │
+│  │  MapView.tsx (Leaflet)        │  │
+│  │  ├─ User location marker      │  │
+│  │  ├─ Toilet/ATM popups         │  │
+│  │  └─ Interactive viewport      │  │
+│  └───────────────────────────────┘  │
+│  ┌───────────────────────────────┐  │
+│  │  App.tsx (Orchestration)      │  │
+│  │  ├─ State: location, filters  │  │
+│  │  ├─ Find button logic         │  │
+│  │  └─ Filter controls           │  │
+│  └───────────────────────────────┘  │
+└─────────────────────────────────────┘
+           ↓ (API calls)
+┌─────────────────────────────────────┐
+│   External APIs (No Backend)        │
+├─────────────────────────────────────┤
+│ • Overpass API → Toilet locations   │
+│ • Nominatim API → Address lookup    │
+│ • Geolocation API → User position   │
+└─────────────────────────────────────┘
+```
+
+---
+
+## Future Roadmap
+
+- [ ] **Planned Toilet Visits**: Save and plan trips to verified restrooms
+- [ ] **Community Reviews**: Allow users to rate toilets by cleanliness, wait time, amenities
+- [ ] **Offline Mode**: Cache nearby toilet data for offline access
+- [ ] **Real-time Updates**: Show occupancy status / average wait times (via OpenStreetMap community)
+- [ ] **Smart Suggestions**: ML model trained on visit patterns to suggest best toilets
+- [ ] **Mobile App**: React Native version for iOS/Android
+- [ ] **Payment Integration**: Partner with public restroom providers for premium facilities
+- [ ] **Accessibility Metrics**: Detailed accessibility info beyond wheelchair access
+- [ ] **Environmental Impact**: Track carbon saved by using public restrooms vs. searching inefficiently
+- [ ] **Internationalization**: Support for 20+ languages and regional toilet terminology
+
+---
+
+## Contributing
+
+Found a bug? Have a feature idea? Contributions are welcome!
+
+```bash
+# Create a feature branch
+git checkout -b feature/your-feature
+
+# Make changes, commit, push
+git push origin feature/your-feature
+
+# Open a pull request
+```
+
+---
+
+## License
+
+MIT © 2025
+
+---
+
+## Acknowledgments
+
+- **OpenStreetMap** for toilet location data
+- **Leaflet** for lightweight, beautiful maps
+- **Vite** for blazing-fast builds
+- **Singapore's public restroom network** for existing, though hard-to-find, infrastructure
+
+---
+
+**Made with 🚽 during a weekend hackathon.**
