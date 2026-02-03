@@ -1,8 +1,8 @@
 <div align="center">
-<img width="256" height="256" alt="FindToilet Icon" src="./magnify-icon.png" />
+<img width="256" height="256" alt="FindIt Icon" src="./magnify-icon.png" />
 </div>
 
-# FindToilet (now _FindIt_) 🚽
+# FindIt 🚽
 
 > A personal hackathon project that solves a real-world problem: finding the nearest public toilets when you need them most.
 
@@ -18,7 +18,7 @@ Instead of another feature request, I decided to solve it myself. This hackathon
 
 ---
 
-## What FindToilet Does
+## What FindIt Does
 
 An AI-powered web app that:
 - 📍 Locates nearby public toilets using your current position
@@ -27,11 +27,11 @@ An AI-powered web app that:
 - 🔍 Filters by amenities: free access, wheelchair accessibility, diaper changing facilities
 - 🏗️ Reverse-engineers toilet locations from OpenStreetMap data
 
-**Live Demo**: [FindToilet on GitHub Pages](https://mandlcho.github.io/findit/)
+**Live Demo**: [FindIt on GitHub Pages](https://mandlcho.github.io/findit/)
 
 ---
 
-## Building FindToilet From Scratch: The Checklist
+## Building FindIt From Scratch: The Checklist
 
 This is the architecture I reverse-engineered when rebuilding this app. Follow this to understand the full stack:
 

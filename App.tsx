@@ -129,7 +129,7 @@ const App: React.FC = () => {
     setFilteredToilets(toiletsToFilter);
   }, [toilets, filters, activeCategory]);
 
-  const handleFindToiletsAt = async (searchLocation: Location) => {
+  const handleFindItsAt = async (searchLocation: Location) => {
     setIsFinding(true);
     try {
       const foundToilets = await findToilets(searchLocation);
@@ -146,15 +146,15 @@ const App: React.FC = () => {
     }
   };
 
-  const handleFindToilets = async () => {
+  const handleFindIts = async () => {
     // Allow usage even when geolocation is denied by searching around the current map center.
     const searchLocation = location ?? mapCenter;
-    return handleFindToiletsAt(searchLocation);
+    return handleFindItsAt(searchLocation);
   };
 
   const handleSecretToilets = () => {
     setIsSecretMenuOpen(false);
-    void handleFindToilets();
+    void handleFindIts();
   };
 
   const handleFindAtmsAt = async (searchLocation: Location) => {
@@ -262,16 +262,16 @@ const App: React.FC = () => {
       
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md text-center">
         <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={handleFindToilets}
-            disabled={isFinding}
-            className="px-6 py-3 text-base font-semibold text-gray-800 bg-white border border-gray-300 rounded-lg transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
-          >
+           <button
+             onClick={handleFindIts}
+             disabled={isFinding}
+             className="px-6 py-3 text-base font-semibold text-gray-800 bg-white border border-gray-300 rounded-lg transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
+           >
             {isFinding ? 'finding...' : `find toilets${activeCategory === 'toilet' ? ` (${filteredToilets.length})` : ''}`}
           </button>
 
           <button
-            onClick={() => handleFindToiletsAt(mapCenter)}
+            onClick={() => handleFindItsAt(mapCenter)}
             disabled={isFinding}
             className="px-4 py-3 text-base font-semibold text-gray-800 bg-white/90 border border-gray-300 rounded-lg transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-lg"
             title="Search around the current map center (useful if you pan/zoom or location is denied)"
