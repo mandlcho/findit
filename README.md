@@ -2,7 +2,7 @@
 <img width="256" height="256" alt="FindToilet Icon" src="./magnify-icon.png" />
 </div>
 
-# FindToilet 🚽
+# FindToilet (now _FindIt_) 🚽
 
 > A personal hackathon project that solves a real-world problem: finding the nearest public toilets when you need them most.
 
