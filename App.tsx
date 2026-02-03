@@ -316,37 +316,26 @@ const App: React.FC = () => {
       </div>
 
       {showInstallPrompt && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4">
-            <div className="text-center">
-              <div className="text-4xl mb-2">📱</div>
-              <h2 className="text-lg font-bold text-gray-900">Add to Home Screen</h2>
-              <p className="text-sm text-gray-600 mt-2">
-                Install FindIt for quick access to nearby toilets anytime!
-              </p>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 max-w-sm w-[90%] z-50 animate-slide-down">
+          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 p-4">
+            <div className="flex items-start gap-3">
+              <div className="text-2xl flex-shrink-0">📱</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900">
+                  Add FindIt to your Home Screen
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Tap <span className="inline-flex items-center justify-center w-4 h-4 bg-blue-100 rounded text-[10px]">⬆️</span> then "Add to Home Screen"
+                </p>
+              </div>
+              <button
+                onClick={() => setShowInstallPrompt(false)}
+                className="text-gray-400 hover:text-gray-600 flex-shrink-0 ml-2"
+                aria-label="Close"
+              >
+                ✕
+              </button>
             </div>
-            
-            <div className="bg-blue-50 rounded-lg p-3 text-xs text-gray-700 space-y-2">
-              <p className="font-semibold">iOS Instructions:</p>
-              <ol className="list-decimal list-inside space-y-1">
-                <li>Tap the Share button <span className="inline-block">⬆️</span></li>
-                <li>Scroll and tap "Add to Home Screen"</li>
-                <li>Tap "Add" in the top right</li>
-              </ol>
-            </div>
-
-            <button
-              onClick={() => setShowInstallPrompt(false)}
-              className="w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Got it!
-            </button>
-            <button
-              onClick={() => setShowInstallPrompt(false)}
-              className="w-full px-4 py-2 text-gray-600 text-sm hover:text-gray-800"
-            >
-              Maybe later
-            </button>
           </div>
         </div>
       )}
