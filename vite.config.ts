@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(() => {
-  const repoName = 'findit';
+  const repoName = 'FindIt';
   const isCI = process.env.GITHUB_ACTIONS === 'true';
 
   return {
