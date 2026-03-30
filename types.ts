@@ -20,3 +20,21 @@ export interface Toilet {
   network?: string;
   brand?: string;
 }
+
+export interface Review {
+  id: string;
+  toiletId: string;
+  userId: string;
+  userName: string;
+  userPhoto: string;
+  rating: number;
+  text: string;
+  createdAt: number;
+}
+
+export interface ReviewUser {
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  email: string;
+}

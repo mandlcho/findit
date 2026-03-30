@@ -179,9 +179,10 @@ interface MapViewProps {
   center: Location;
   zoom: number;
   onViewportChanged: (center: Location, zoom: number) => void;
+  onToiletSelect: (toilet: Toilet) => void;
 }
 
-const MapView: React.FC<MapViewProps> = ({ userLocation, toilets, center, zoom, onViewportChanged }) => {
+const MapView: React.FC<MapViewProps> = ({ userLocation, toilets, center, zoom, onViewportChanged, onToiletSelect }) => {
   const [bounds, setBounds] = useState<L.LatLngBounds | null>(null);
 
   const visibleToilets = bounds
@@ -202,10 +203,13 @@ const MapView: React.FC<MapViewProps> = ({ userLocation, toilets, center, zoom, 
         </Marker>
       )}
       {visibleToilets.map((toilet) => (
-        <Marker 
-          key={toilet.id} 
-          position={[toilet.location.lat, toilet.location.lng]} 
+        <Marker
+          key={toilet.id}
+          position={[toilet.location.lat, toilet.location.lng]}
           icon={toilet.category === 'atm' ? atmIcon : toiletIcon}
+          eventHandlers={{
+            click: () => onToiletSelect(toilet),
+          }}
         >
           <Popup>
             <ToiletPopupContent toilet={toilet} />
