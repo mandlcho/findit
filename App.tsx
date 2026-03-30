@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { reverseGeocode, findToilets } from './services/locationService';
 import { findAtms } from './services/osmService';
+import { onAuthChanged } from './services/authService';
 import MapView from './components/MapView';
-import type { Location, Toilet } from './types';
+import BottomSheet from './components/BottomSheet';
+import ToiletDetail from './components/ToiletDetail';
+import type { Location, Toilet, ReviewUser } from './types';
 
 const DEFAULT_CENTER: Location = { lat: 1.3521, lng: 103.8198 }; // Default to Singapore
 const DEFAULT_ZOOM = 12;
@@ -36,6 +39,8 @@ const App: React.FC = () => {
     wheelchair: false,
     diaper: false,
   });
+  const [selectedToilet, setSelectedToilet] = useState<Toilet | null>(null);
+  const [currentUser, setCurrentUser] = useState<ReviewUser | null>(null);
 
 
   useEffect(() => {
@@ -138,6 +143,22 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const unsub = onAuthChanged((user) => {
+      if (user) {
+        setCurrentUser({
+          uid: user.uid,
+          displayName: user.displayName || 'anonymous',
+          photoURL: user.photoURL || '',
+          email: user.email || '',
+        });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
     if (activeCategory === 'atm') {
       setFilteredToilets(toilets);
       return;
@@ -223,12 +244,13 @@ const App: React.FC = () => {
 
   return (
     <div className="relative h-screen w-screen">
-      <MapView 
+      <MapView
         userLocation={location}
         toilets={filteredToilets}
         center={mapCenter}
         zoom={mapZoom}
         onViewportChanged={handleViewportChanged}
+        onToiletSelect={setSelectedToilet}
       />
 
       {toilets.length > 0 && !isFinding && activeCategory === 'toilet' && (
@@ -339,6 +361,16 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      <BottomSheet isOpen={selectedToilet !== null} onClose={() => setSelectedToilet(null)}>
+        {selectedToilet && (
+          <ToiletDetail
+            toilet={selectedToilet}
+            user={currentUser}
+            onUserChange={() => {}}
+          />
+        )}
+      </BottomSheet>
     </div>
   );
 };
