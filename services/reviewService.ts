@@ -10,7 +10,7 @@ import {
   getDoc,
   setDoc,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, isConfigured } from './firebase';
 import type { Review } from '../types';
 
 const REVIEWS_COLLECTION = 'reviews';
@@ -21,11 +21,17 @@ interface RatingAgg {
   count: number;
 }
 
+const ensureDb = () => {
+  if (!db || !isConfigured) throw new Error('Firebase not configured');
+  return db;
+};
+
 export const addReview = async (review: Omit<Review, 'id'>): Promise<string> => {
-  const docRef = await addDoc(collection(db, REVIEWS_COLLECTION), review);
+  const firestore = ensureDb();
+  const docRef = await addDoc(collection(firestore, REVIEWS_COLLECTION), review);
 
   // Update rating aggregate
-  const ratingRef = doc(db, RATINGS_COLLECTION, review.toiletId);
+  const ratingRef = doc(firestore, RATINGS_COLLECTION, review.toiletId);
   const ratingSnap = await getDoc(ratingRef);
   if (ratingSnap.exists()) {
     const data = ratingSnap.data() as RatingAgg;
@@ -44,6 +50,7 @@ export const addReview = async (review: Omit<Review, 'id'>): Promise<string> => 
 };
 
 export const getReviews = async (toiletId: string): Promise<Review[]> => {
+  if (!isConfigured || !db) return [];
   const q = query(
     collection(db, REVIEWS_COLLECTION),
     where('toiletId', '==', toiletId),
@@ -54,6 +61,7 @@ export const getReviews = async (toiletId: string): Promise<Review[]> => {
 };
 
 export const getRating = async (toiletId: string): Promise<{ average: number; count: number }> => {
+  if (!isConfigured || !db) return { average: 0, count: 0 };
   const ratingRef = doc(db, RATINGS_COLLECTION, toiletId);
   const ratingSnap = await getDoc(ratingRef);
   if (!ratingSnap.exists()) {
@@ -67,10 +75,11 @@ export const getRating = async (toiletId: string): Promise<{ average: number; co
 };
 
 export const deleteReview = async (reviewId: string, toiletId: string, rating: number): Promise<void> => {
-  await deleteDoc(doc(db, REVIEWS_COLLECTION, reviewId));
+  const firestore = ensureDb();
+  await deleteDoc(doc(firestore, REVIEWS_COLLECTION, reviewId));
 
   // Update rating aggregate
-  const ratingRef = doc(db, RATINGS_COLLECTION, toiletId);
+  const ratingRef = doc(firestore, RATINGS_COLLECTION, toiletId);
   const ratingSnap = await getDoc(ratingRef);
   if (ratingSnap.exists()) {
     const data = ratingSnap.data() as RatingAgg;
