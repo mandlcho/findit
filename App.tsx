@@ -46,6 +46,7 @@ const App: React.FC = () => {
   const [toast, setToast] = useState<{message: string, type: 'error'|'info'|'success'} | null>(null);
   const [showSearchHere, setShowSearchHere] = useState(false);
   const lastSearchCenter = useRef<Location | null>(null);
+  const [pendingAutoSearch, setPendingAutoSearch] = useState<Location | null>(null);
 
 
   useEffect(() => {
@@ -83,7 +84,8 @@ const App: React.FC = () => {
             setLocation(newLocation);
             setMapCenter(newLocation);
             setMapZoom(17);
-            
+            setPendingAutoSearch(newLocation);
+
             setLocationName('resolving location...');
             try {
               const name = await reverseGeocode(newLocation);
@@ -162,6 +164,14 @@ const App: React.FC = () => {
     });
     return unsub;
   }, []);
+
+  // Auto-search when location is first granted
+  useEffect(() => {
+    if (pendingAutoSearch && !hasSearched && !isFinding) {
+      setPendingAutoSearch(null);
+      handleFindItsAt(pendingAutoSearch);
+    }
+  }, [pendingAutoSearch]);
 
   useEffect(() => {
     if (activeCategory === 'atm') {
@@ -275,6 +285,23 @@ const App: React.FC = () => {
         onViewportChanged={handleViewportChanged}
         onToiletSelect={setSelectedToilet}
       />
+
+      {/* Re-center button */}
+      {location && hasSearched && (
+        <button
+          onClick={() => {
+            setMapCenter(location);
+            setMapZoom(17);
+          }}
+          className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
+          title="re-center on your location"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+          </svg>
+        </button>
+      )}
 
       {/* Floating "search this area" pill when user pans away */}
       {showSearchHere && !isFinding && (

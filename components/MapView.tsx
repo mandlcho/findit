@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import type { Location, Toilet } from '../types';
 import { reverseGeocode } from '../services/locationService';
@@ -197,7 +198,7 @@ const MapView: React.FC<MapViewProps> = ({ userLocation, toilets, center, zoom, 
     : [];
 
   return (
-    <MapContainer center={[center.lat, center.lng]} zoom={zoom} scrollWheelZoom={true} className="h-full w-full z-0">
+    <MapContainer center={[center.lat, center.lng]} zoom={zoom} scrollWheelZoom={true} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-full w-full z-0">
       <ChangeView center={[center.lat, center.lng]} zoom={zoom} />
       <MapEventsHandler onViewportChanged={onViewportChanged} onBoundsChange={setBounds} />
       <TileLayer
@@ -209,20 +210,34 @@ const MapView: React.FC<MapViewProps> = ({ userLocation, toilets, center, zoom, 
           <Popup>you are here.</Popup>
         </Marker>
       )}
-      {visibleToilets.map((toilet) => (
-        <Marker
-          key={toilet.id}
-          position={[toilet.location.lat, toilet.location.lng]}
-          icon={toilet.category === 'atm' ? atmIcon : toiletIcon}
-          eventHandlers={{
-            click: () => onToiletSelect(toilet),
-          }}
-        >
-          <Popup>
-            <ToiletPopupContent toilet={toilet} userLocation={userLocation} />
-          </Popup>
-        </Marker>
-      ))}
+      <MarkerClusterGroup
+        chunkedLoading
+        maxClusterRadius={40}
+        iconCreateFunction={(cluster: L.MarkerCluster) => {
+          const count = cluster.getChildCount();
+          return L.divIcon({
+            html: `<div class="bg-gray-800 text-white rounded-full w-9 h-9 flex items-center justify-center text-xs font-bold shadow-lg">${count}</div>`,
+            className: 'dummy',
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+          });
+        }}
+      >
+        {visibleToilets.map((toilet) => (
+          <Marker
+            key={toilet.id}
+            position={[toilet.location.lat, toilet.location.lng]}
+            icon={toilet.category === 'atm' ? atmIcon : toiletIcon}
+            eventHandlers={{
+              click: () => onToiletSelect(toilet),
+            }}
+          >
+            <Popup>
+              <ToiletPopupContent toilet={toilet} userLocation={userLocation} />
+            </Popup>
+          </Marker>
+        ))}
+      </MarkerClusterGroup>
     </MapContainer>
   );
 };
