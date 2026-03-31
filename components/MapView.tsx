@@ -198,7 +198,7 @@ const MapView: React.FC<MapViewProps> = ({ userLocation, toilets, center, zoom, 
     : [];
 
   return (
-    <MapContainer center={[center.lat, center.lng]} zoom={zoom} scrollWheelZoom={true} wheelDebounceTime={100} wheelPxPerZoomLevel={120} className="h-full w-full z-0">
+    <MapContainer center={[center.lat, center.lng]} zoom={zoom} scrollWheelZoom={true} zoomSnap={0.25} zoomDelta={0.5} wheelDebounceTime={40} wheelPxPerZoomLevel={120} className="h-full w-full z-0">
       <ChangeView center={[center.lat, center.lng]} zoom={zoom} />
       <MapEventsHandler onViewportChanged={onViewportChanged} onBoundsChange={setBounds} />
       <TileLayer
