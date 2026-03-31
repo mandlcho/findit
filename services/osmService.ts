@@ -84,8 +84,9 @@ export async function findAtms(location: Location): Promise<Toilet[]> {
         };
       })
       .filter((item): item is Toilet => Boolean(item));
-  } catch (error) {
+  } catch (error: any) {
     console.error('error finding atms with openstreetmap api:', error);
-    throw new Error('failed to find nearby atms from openstreetmap.');
+    const detail = error?.message || String(error);
+    throw new Error(`failed to find nearby atms: ${detail}`);
   }
 }

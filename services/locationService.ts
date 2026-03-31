@@ -119,9 +119,10 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
     }
     return [];
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("error finding toilets with openstreetmap api:", error);
-    throw new Error("failed to find nearby toilets from openstreetmap.");
+    const detail = error?.message || String(error);
+    throw new Error(`failed to find nearby toilets: ${detail}`);
   }
 }
 
