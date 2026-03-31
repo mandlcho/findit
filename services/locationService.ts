@@ -36,17 +36,20 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
     );
     out;
   `;
-  const encodedQuery = encodeURIComponent(overpassQuery);
   const endpoints = [
-    `https://overpass-api.de/api/interpreter?data=${encodedQuery}`,
-    `https://overpass.kumi.systems/api/interpreter?data=${encodedQuery}`,
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass-api.de/api/interpreter',
   ];
 
   try {
     let response: Response | null = null;
     for (const url of endpoints) {
       try {
-        response = await fetch(url);
+        response = await fetch(url, {
+          method: 'POST',
+          body: `data=${encodeURIComponent(overpassQuery)}`,
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
         if (response.ok) break;
       } catch {
         continue;
