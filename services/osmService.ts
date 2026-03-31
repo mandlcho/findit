@@ -22,27 +22,33 @@ interface OverpassElement {
 }
 
 export async function findAtms(location: Location): Promise<Toilet[]> {
-  const bboxDelta = 0.05;
-  const south = location.lat - bboxDelta;
-  const west = location.lng - bboxDelta;
-  const north = location.lat + bboxDelta;
-  const east = location.lng + bboxDelta;
+  const radiusMeters = 2000;
 
   const overpassQuery = `
-    [out:json][timeout:25];
+    [out:json][timeout:10];
     (
-      node["amenity"="atm"](${south},${west},${north},${east});
-      way["amenity"="atm"](${south},${west},${north},${east});
-      relation["amenity"="atm"](${south},${west},${north},${east});
+      node["amenity"="atm"](around:${radiusMeters},${location.lat},${location.lng});
     );
-    out center;
+    out;
   `;
-  const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+  const encodedQuery = encodeURIComponent(overpassQuery);
+  const endpoints = [
+    `https://overpass-api.de/api/interpreter?data=${encodedQuery}`,
+    `https://overpass.kumi.systems/api/interpreter?data=${encodedQuery}`,
+  ];
 
   try {
-    const response = await fetch(overpassUrl);
-    if (!response.ok) {
-      throw new Error(`overpass api failed with status: ${response.status}`);
+    let response: Response | null = null;
+    for (const url of endpoints) {
+      try {
+        response = await fetch(url);
+        if (response.ok) break;
+      } catch {
+        continue;
+      }
+    }
+    if (!response || !response.ok) {
+      throw new Error(`overpass api failed with status: ${response?.status ?? 'unreachable'}`);
     }
 
     const data = await response.json();
