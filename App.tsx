@@ -46,7 +46,7 @@ const App: React.FC = () => {
   const [toast, setToast] = useState<{message: string, type: 'error'|'info'|'success'} | null>(null);
   const [showSearchHere, setShowSearchHere] = useState(false);
   const lastSearchCenter = useRef<Location | null>(null);
-  const [pendingAutoSearch, setPendingAutoSearch] = useState<Location | null>(null);
+  const recenterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 
   useEffect(() => {
@@ -84,8 +84,6 @@ const App: React.FC = () => {
             setLocation(newLocation);
             setMapCenter(newLocation);
             setMapZoom(17);
-            setPendingAutoSearch(newLocation);
-
             setLocationName('resolving location...');
             try {
               const name = await reverseGeocode(newLocation);
@@ -164,14 +162,6 @@ const App: React.FC = () => {
     });
     return unsub;
   }, []);
-
-  // Auto-search when location is first granted
-  useEffect(() => {
-    if (pendingAutoSearch && !hasSearched && !isFinding) {
-      setPendingAutoSearch(null);
-      handleFindItsAt(pendingAutoSearch);
-    }
-  }, [pendingAutoSearch]);
 
   useEffect(() => {
     if (activeCategory === 'atm') {
@@ -260,8 +250,19 @@ const App: React.FC = () => {
     setMapZoom(zoom);
     if (hasSearched && lastSearchCenter.current) {
       const dist = haversineDistance(lastSearchCenter.current, center);
-      // Show "search this area" if user panned more than 500m from last search
       setShowSearchHere(dist > 500);
+    }
+
+    // Auto re-center after 15s of inactivity when panned away from user location
+    if (recenterTimer.current) clearTimeout(recenterTimer.current);
+    if (location) {
+      const distFromUser = haversineDistance(location, center);
+      if (distFromUser > 100) {
+        recenterTimer.current = setTimeout(() => {
+          setMapCenter(location);
+          setMapZoom(17);
+        }, 15000);
+      }
     }
   };
 
