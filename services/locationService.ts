@@ -29,7 +29,7 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
   const radiusMeters = 2000;
 
   const overpassQuery = `
-    [out:json][timeout:10];
+    [out:json][timeout:25];
     (
       node["amenity"="toilets"](around:${radiusMeters},${location.lat},${location.lng});
       node["railway"="station"]["toilets"="yes"](around:${radiusMeters},${location.lat},${location.lng});
@@ -37,6 +37,7 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
     out;
   `;
   const endpoints = [
+    'https://gall.openstreetmap.de/api/interpreter',
     'https://overpass.kumi.systems/api/interpreter',
     'https://overpass-api.de/api/interpreter',
   ];
