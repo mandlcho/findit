@@ -23,7 +23,6 @@ interface OverpassElement {
     diaper?: string;
     opening_hours?: string;
   };
-  nodes?: number[];
 }
 
 export async function findToilets(location: Location): Promise<Toilet[]> {
@@ -34,20 +33,11 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
   const east = location.lng + bboxDelta;
 
   const overpassQuery = `
-    [out:json][timeout:25];
+    [out:json][timeout:15];
     (
-      node["amenity"="toilets"](${south},${west},${north},${east});
-      way["amenity"="toilets"](${south},${west},${north},${east});
-      relation["amenity"="toilets"](${south},${west},${north},${east});
-      node["railway"="station"]["toilets"="yes"](${south},${west},${north},${east});
-      way["railway"="station"]["toilets"="yes"](${south},${west},${north},${east});
-      relation["railway"="station"]["toilets"="yes"](${south},${west},${north},${east});
-    )->.features;
-    node.features->.feature_nodes;
-    (
-      .feature_nodes <;
-    )->.parents;
-    (.features; .parents;);
+      nwr["amenity"="toilets"](${south},${west},${north},${east});
+      nwr["railway"="station"]["toilets"="yes"](${south},${west},${north},${east});
+    );
     out center;
   `;
   const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
@@ -62,21 +52,7 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
     if (data && data.elements) {
       const elements: OverpassElement[] = data.elements;
 
-      const parentNameMap = new Map<number, string>();
-      const ways = elements.filter(e => e.type === 'way' && e.tags?.name && e.nodes);
-      for (const way of ways) {
-        for (const nodeId of way.nodes!) {
-          if (!parentNameMap.has(nodeId)) {
-            parentNameMap.set(nodeId, way.tags!.name!);
-          }
-        }
-      }
-      
-      const toiletElements = elements.filter(e => 
-        e.tags?.amenity === 'toilets' || (e.tags?.railway === 'station' && e.tags?.toilets === 'yes')
-      );
-
-      return toiletElements.map((element: OverpassElement): Toilet => {
+      return elements.map((element: OverpassElement): Toilet => {
         const loc = {
             lat: element.center?.lat || element.lat,
             lng: element.center?.lon || element.lon
@@ -89,16 +65,11 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
         ].filter(Boolean);
         
         let name = 'public toilet';
-        let housedIn: string | undefined = undefined;
-        
+
         if (element.tags?.railway === 'station') {
           name = element.tags.name ? `${element.tags.name} station toilet` : 'station toilet';
         } else if (element.tags?.name) {
           name = element.tags.name;
-        }
-
-        if (element.type === 'node' && parentNameMap.has(element.id)) {
-            housedIn = parentNameMap.get(element.id)!;
         }
         
         const address = addressParts.length > 0 ? addressParts.join(', ') : 'address not available';
@@ -109,7 +80,6 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
           category: 'toilet',
           location: loc,
           address: address.toLowerCase(),
-          housedIn: housedIn?.toLowerCase(),
           fee: element.tags?.fee === 'no' || element.tags?.fee === '0',
           wheelchair: element.tags?.wheelchair === 'yes',
           diaper: element.tags?.diaper === 'yes',
