@@ -6,7 +6,7 @@ export interface Location {
 
 export type PlaceCategory = 'toilet' | 'atm';
 
-export interface Toilet {
+export interface Place {
   id: string;
   name: string;
   location: Location;
@@ -16,10 +16,14 @@ export interface Toilet {
   diaper?: boolean;
   housedIn?: string;
   category?: PlaceCategory;
+  openingHours?: string;
   operator?: string;
   network?: string;
   brand?: string;
 }
+
+/** @deprecated Use Place instead */
+export type Toilet = Place;
 
 export interface Review {
   id: string;

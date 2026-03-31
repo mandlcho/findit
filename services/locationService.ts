@@ -21,6 +21,7 @@ interface OverpassElement {
     fee?: string;
     wheelchair?: string;
     diaper?: string;
+    opening_hours?: string;
   };
   nodes?: number[];
 }
@@ -112,6 +113,7 @@ export async function findToilets(location: Location): Promise<Toilet[]> {
           fee: element.tags?.fee === 'no' || element.tags?.fee === '0',
           wheelchair: element.tags?.wheelchair === 'yes',
           diaper: element.tags?.diaper === 'yes',
+          openingHours: element.tags?.opening_hours?.toLowerCase(),
         };
       });
     }

@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import type { Toilet, Review, ReviewUser } from '../types';
+import type { Toilet, Review, ReviewUser, Location } from '../types';
 import { getReviews, getRating, addReview, deleteReview } from '../services/reviewService';
 import { reverseGeocode } from '../services/locationService';
 import { signInWithGoogle, signOut } from '../services/authService';
+import { formatDistance } from '../utils/distance';
 import StarRating from './StarRating';
 
 interface ToiletDetailProps {
   toilet: Toilet;
   user: ReviewUser | null;
   onUserChange: () => void;
+  userLocation?: Location | null;
 }
 
-const ToiletDetail: React.FC<ToiletDetailProps> = ({ toilet, user, onUserChange }) => {
+const ToiletDetail: React.FC<ToiletDetailProps> = ({ toilet, user, onUserChange, userLocation }) => {
   const [address, setAddress] = useState(toilet.address || '');
   const [reviews, setReviews] = useState<Review[]>([]);
   const [avgRating, setAvgRating] = useState(0);
@@ -134,6 +136,12 @@ const ToiletDetail: React.FC<ToiletDetailProps> = ({ toilet, user, onUserChange 
         <h2 className="text-lg font-bold">{toilet.name}</h2>
         {toilet.housedIn && <p className="text-xs text-gray-500">inside {toilet.housedIn}</p>}
         <p className="text-xs text-gray-500 mt-1">{address || 'loading address...'}</p>
+        <p className="text-xs text-gray-400 mt-1">
+          {toilet.openingHours || 'hours not available'}
+        </p>
+        {formatDistance(userLocation ?? null, toilet.location) && (
+          <p className="text-xs text-gray-400 font-mono mt-0.5">{formatDistance(userLocation ?? null, toilet.location)}</p>
+        )}
       </div>
 
       {/* Rating summary */}

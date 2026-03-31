@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 're
 import L from 'leaflet';
 import type { Location, Toilet } from '../types';
 import { reverseGeocode } from '../services/locationService';
+import { formatDistance } from '../utils/distance';
 
 const userIconSvg = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="32" height="32"><circle cx="50" cy="50" r="45" fill="#3B82F6" stroke="#FFFFFF" stroke-width="10"/></svg>`;
 const toiletIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="5" r="2" /><path d="M9 7v10H5V7z" /><line x1="12" y1="4" x2="12" y2="20" /><circle cx="17" cy="5" r="2" /><path d="M15 7l2 10 2-10z" /></svg>`;
@@ -71,7 +72,7 @@ function MapEventsHandler({
   return null;
 }
 
-const ToiletPopupContent: React.FC<{ toilet: Toilet }> = ({ toilet }) => {
+const ToiletPopupContent: React.FC<{ toilet: Toilet; userLocation: Location | null }> = ({ toilet, userLocation }) => {
   const [address, setAddress] = useState(toilet.address);
   const [isLoading, setIsLoading] = useState(false);
   const isAtm = toilet.category === 'atm';
@@ -151,7 +152,13 @@ const ToiletPopupContent: React.FC<{ toilet: Toilet }> = ({ toilet }) => {
           {[toilet.operator, toilet.network, toilet.brand].filter(Boolean).join(' • ')}
         </p>
       )}
-      <p className="mb-2 break-words">{isLoading ? 'looking up address...' : address}</p>
+      <p className="mb-1 break-words">{isLoading ? 'looking up address...' : address}</p>
+      <p className="mb-2 text-xs text-gray-400">
+        {toilet.openingHours || 'hours not available'}
+      </p>
+      {formatDistance(userLocation, toilet.location) && (
+        <p className="mb-1 text-[10px] text-gray-400 font-mono">{formatDistance(userLocation, toilet.location)}</p>
+      )}
       <p className="mb-2 text-[10px] text-gray-500 leading-tight">
         data from openstreetmap. may be outdated.
       </p>
@@ -212,7 +219,7 @@ const MapView: React.FC<MapViewProps> = ({ userLocation, toilets, center, zoom, 
           }}
         >
           <Popup>
-            <ToiletPopupContent toilet={toilet} />
+            <ToiletPopupContent toilet={toilet} userLocation={userLocation} />
           </Popup>
         </Marker>
       ))}
